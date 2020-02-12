@@ -25,3 +25,8 @@ key-build*
 .emacs.desktop*
 TAGS*~
 git-src
+.git-credentials
+*.tar.gz
+.directory
+/*.patch
+/.config*
