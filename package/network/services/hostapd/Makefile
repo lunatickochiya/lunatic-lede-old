@@ -7,13 +7,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=hostapd
-PKG_RELEASE:=7
+PKG_RELEASE:=1
 
 PKG_SOURCE_URL:=http://w1.fi/hostap.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_DATE:=2016-12-19
-PKG_SOURCE_VERSION:=ad02e79d12fd70ed6bd5fbaf64001a2851e5bb7b
-PKG_MIRROR_HASH:=7a0983f004b156d46911765c113754a4c00f56fb889430620bbd061b3b1fcf33
+PKG_SOURCE_DATE:=2018-12-02
+PKG_SOURCE_VERSION:=c2c6c01bb8b6fafc2074b46a53c4eab2c145ac6f
+PKG_MIRROR_HASH:=skip
 
 PKG_MAINTAINER:=Felix Fietkau <nbd@nbd.name>
 PKG_LICENSE:=BSD-3-Clause
@@ -272,8 +272,8 @@ TARGET_CPPFLAGS := \
 	-D_GNU_SOURCE \
 	$(if $(CONFIG_WPA_MSG_MIN_PRIORITY),-DCONFIG_MSG_MIN_PRIORITY=$(CONFIG_WPA_MSG_MIN_PRIORITY))
 
-TARGET_CFLAGS += -ffunction-sections -fdata-sections
-TARGET_LDFLAGS += -Wl,--gc-sections
+TARGET_CFLAGS += -ffunction-sections -fdata-sections -flto
+TARGET_LDFLAGS += -Wl,--gc-sections -flto=jobserver -fuse-linker-plugin
 ifeq ($(findstring supplicant,$(BUILD_VARIANT)),)
   TARGET_LDFLAGS += -lubox -lubus
 endif
@@ -299,6 +299,7 @@ define Build/Compile/wpad
 		$(call Build/RunMake,wpa_supplicant,-s MULTICALL=1 dump_cflags) | \
 		sed -e 's,-n ,,g' -e 's^$(TARGET_CFLAGS)^^' \
 	` > $(PKG_BUILD_DIR)/.cflags
+	sed -i 's/"/\\"/g' $(PKG_BUILD_DIR)/.cflags
 	+$(call Build/RunMake,hostapd, \
 		CFLAGS="$$$$(cat $(PKG_BUILD_DIR)/.cflags)" \
 		MULTICALL=1 \
