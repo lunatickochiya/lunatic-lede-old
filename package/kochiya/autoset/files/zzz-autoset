@@ -19,13 +19,13 @@ uci set wireless.@wifi-iface[0].wpa_disable_eapol_key_retries='1'
 uci set wireless.@wifi-iface[1].wpa_disable_eapol_key_retries='1'
 uci set wireless.@wifi-iface[0].ssid=Lunatic_2.4G_$(cat /sys/class/ieee80211/phy0/macaddress | sed 's/.[0-9A-Fa-f]:.[0-9A-Fa-f]:.[0-9A-Fa-f]:\(.[0-9A-Fa-f]\):\(.[0-9A-Fa-f]\):\(.[0-9A-Fa-f]\)/\1\2\3/g' | tr :[a-z] :[A-Z])
 uci set wireless.@wifi-iface[1].ssid=Lunatic_5G_$(cat /sys/class/ieee80211/phy1/macaddress | sed 's/.[0-9A-Fa-f]:.[0-9A-Fa-f]:.[0-9A-Fa-f]:\(.[0-9A-Fa-f]\):\(.[0-9A-Fa-f]\):\(.[0-9A-Fa-f]\)/\1\2\3/g' | tr :[a-z] :[A-Z])
-uci set network.lan.ipaddr=192.168.7.1
+uci set network.lan.ipaddr=192.168.9.1
 uci commit
 
 sed -i '/DISTRIB_REVISION/d' /etc/openwrt_release
-echo "DISTRIB_REVISION='2U4U'" >> /etc/openwrt_release
+echo "DISTRIB_REVISION='2U4U '%R'" >> /etc/openwrt_release
 sed -i '/DISTRIB_DESCRIPTION/d' /etc/openwrt_release
-echo "DISTRIB_DESCRIPTION='Openwrt'" >> /etc/openwrt_release
+echo "DISTRIB_DESCRIPTION='LEDE-17.01'" >> /etc/openwrt_release
 sed -i '202,207d' /www/luci-static/material/js/script.js
 /etc/init.d/dnscrypt-proxy stop
 /etc/init.d/qos_gargoyle disable
