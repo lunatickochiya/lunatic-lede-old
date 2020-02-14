@@ -23,7 +23,7 @@ uci set network.lan.ipaddr=192.168.9.1
 uci commit
 
 sed -i '/DISTRIB_REVISION/d' /etc/openwrt_release
-echo "DISTRIB_REVISION='2U4U '%R'" >> /etc/openwrt_release
+echo "DISTRIB_REVISION='%R''2U4U'" >> /etc/openwrt_release
 sed -i '/DISTRIB_DESCRIPTION/d' /etc/openwrt_release
 echo "DISTRIB_DESCRIPTION='LEDE-17.01'" >> /etc/openwrt_release
 sed -i '202,207d' /www/luci-static/material/js/script.js
