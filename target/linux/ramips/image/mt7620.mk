@@ -29,7 +29,8 @@ define Build/elecom-header
 endef
 
 define Build/zyimage
-	$(STAGING_DIR_HOST)/bin/zyimage $(1) $@
+	$(STAGING_DIR_HOST)/bin/zyimage $(1) $@; \
+	echo ""
 endef
 
 define Device/ArcherC20i

@@ -16,8 +16,11 @@ define Build/netgear-chk
 		-o $@.new \
 		-k $@ \
 		-b $(NETGEAR_BOARD_ID) \
-		-r $(NETGEAR_REGION)
-	mv $@.new $@
+		$(if $(NETGEAR_REGION),-r $(NETGEAR_REGION),); \
+	if [ -e "$@.new" ]; then \
+		mv $@.new $@; \
+	fi; \
+	echo ""
 endef
 
 define Build/netgear-dni
@@ -25,8 +28,11 @@ define Build/netgear-dni
 		-B $(NETGEAR_BOARD_ID) -v LEDE.$(REVISION) \
 		$(if $(NETGEAR_HW_ID),-H $(NETGEAR_HW_ID)) \
 		-r "$(1)" \
-		-i $@ -o $@.new
-	mv $@.new $@
+		-i $@ -o $@.new; \
+	if [ -e "$@.new" ]; then \
+		mv $@.new $@; \
+	fi; \
+	echo ""
 endef
 
 define Build/tplink-safeloader
@@ -126,8 +132,9 @@ define Build/append-ubi
 endef
 
 define Build/pad-to
-	dd if=$@ of=$@.new bs=$(1) conv=sync
-	mv $@.new $@
+	dd if=$@ of=$@.new bs=$(1) conv=sync; \
+	mv $@.new $@; \
+	echo ""
 endef
 
 define Build/pad-extra

@@ -77,7 +77,8 @@ define MkCombineduImage
 endef
 
 define Build/umedia-header
-	fix-u-media-header -T 0x46 -B $(1) -i $@ -o $@.new && mv $@.new $@
+	fix-u-media-header -T 0x46 -B $(1) -i $@ -o $@.new && mv $@.new $@; \
+	echo ""
 endef
 
 define Build/edimax-header
@@ -86,8 +87,9 @@ define Build/edimax-header
 endef
 
 define Build/poray-header
-	$(STAGING_DIR_HOST)/bin/mkporayfw $(1) -f $@ -o $@.new
-	mv $@.new $@
+	$(STAGING_DIR_HOST)/bin/mkporayfw $(1) -f $@ -o $@.new; \
+	mv $@.new $@; \
+	echo ""
 endef
 
 define Build/senao-header
@@ -105,8 +107,9 @@ define Build/seama-seal
 endef
 
 define Build/wrg-header
-	mkwrgimg -i $@ -d "/dev/mtdblock/2" -s $(1) -o $@.new
-	mv $@.new $@
+	mkwrgimg -i $@ -d "/dev/mtdblock/2" -s $(1) -o $@.new; \
+	mv $@.new $@; \
+	echo ""
 endef
 
 #

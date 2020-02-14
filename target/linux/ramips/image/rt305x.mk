@@ -2,18 +2,21 @@
 # RT305X Profiles
 #
 define Build/dap-header
-	$(STAGING_DIR_HOST)/bin/mkdapimg $(1) -i $@ -o $@.new
-	mv $@.new $@
+	$(STAGING_DIR_HOST)/bin/mkdapimg $(1) -i $@ -o $@.new \
+	mv $@.new $@ \
+	echo ""
 endef
 
 define Build/hilink-header
-	$(STAGING_DIR_HOST)/bin/mkhilinkfw -e -i $@ -o $@.new
-	mv $@.new $@
+	$(STAGING_DIR_HOST)/bin/mkhilinkfw -e -i $@ -o $@.new \
+	mv $@.new $@ \
+	echo ""
 endef
 
 define Build/jcg-header
-	$(STAGING_DIR_HOST)/bin/jcgimage -v $(1) -u $@ -o $@.new
-	mv $@.new $@
+	$(STAGING_DIR_HOST)/bin/jcgimage -v $(1) -u $@ -o $@.new \
+	mv $@.new $@ \
+	echo ""
 endef
 
 
