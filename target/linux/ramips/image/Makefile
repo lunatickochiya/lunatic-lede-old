@@ -82,8 +82,9 @@ define Build/umedia-header
 endef
 
 define Build/edimax-header
-	$(STAGING_DIR_HOST)/bin/mkedimaximg -i $@ -o $@.new $(1)
-	@mv $@.new $@
+	$(STAGING_DIR_HOST)/bin/mkedimaximg -i $@ -o $@.new $(1); \
+	@mv $@.new $@; \
+	echo ""
 endef
 
 define Build/poray-header
@@ -93,13 +94,15 @@ define Build/poray-header
 endef
 
 define Build/senao-header
-	$(STAGING_DIR_HOST)/bin/mksenaofw $(1) -e $@ -o $@.new
-	mv $@.new $@
+	$(STAGING_DIR_HOST)/bin/mksenaofw $(1) -e $@ -o $@.new; \
+	mv $@.new $@; \
+	echo ""
 endef
 
 define Build/seama
-	$(STAGING_DIR_HOST)/bin/seama -i $@ $(1)
-	mv $@.seama $@
+	$(STAGING_DIR_HOST)/bin/seama -i $@ $(1); \
+	mv $@.seama $@; \
+	echo ""
 endef
 
 define Build/seama-seal

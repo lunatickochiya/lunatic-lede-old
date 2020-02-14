@@ -845,7 +845,8 @@ define Image/Build/Zcomax
 			-k $(KDIR_TMP)/vmlinux-$(2).uImage \
 			-r $(KDIR)/root.$(1) \
 			-o $(call imgname,$(1),$(2))-factory.img; \
-	fi
+	fi ; \
+	echo ""
 endef
 
 

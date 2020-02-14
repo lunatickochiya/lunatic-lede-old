@@ -4,7 +4,11 @@
 
 define Build/tplink-header
 	$(STAGING_DIR_HOST)/bin/mktplinkfw2 -a 0x4 -V "ver. 2.0" -B $(1) \
-		-o $@.new -k $@ -r $(IMAGE_ROOTFS) && mv $@.new $@
+		-o $@.new -k $@ -r $(IMAGE_ROOTFS); \
+		if [ -e "$@.new" ]; then \
+		mv $@.new $@; \
+		fi; \
+		echo ""
 endef
 
 define Build/pad-kernel-ex2700
@@ -16,7 +20,11 @@ endef
 define Build/netgear-header
 	$(STAGING_DIR_HOST)/bin/mkdniimg \
 		$(1) -v OpenWrt -i $@ \
-		-o $@.new && mv $@.new $@
+		-o $@.new; \
+		if [ -e "$@.new" ]; then \
+		mv $@.new $@; \
+		fi; \
+		echo ""
 endef
 
 define Build/elecom-header
