@@ -106,6 +106,9 @@ get_status_led() {
 	psg1218)
 		status_led="$board:yellow:status"
 		;;
+	youni)
+		status_led="$board:green:wlan"
+		;;
 	cy-swr1100|\
 	w502u)
 		status_led="$board:blue:wps"

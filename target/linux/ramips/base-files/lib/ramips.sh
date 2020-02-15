@@ -658,6 +658,9 @@ ramips_board_detect() {
 	*"GHL-R-001")
 		name="ghl-r-001"
 		;;
+	*"Youni")
+		name="youni"
+		;;
 	*)
 		name="generic"
 		;;
