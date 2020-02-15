@@ -3,6 +3,27 @@
 源码更新交流学习：点击链接加入群聊 ：https://jq.qq.com/?_wv=1027&k=5QgVYsC  
 群号： 286754582
 
+  _______                     ________        __
+ |       |.-----.-----.-----.|  |  |  |.----.|  |_
+ |   -   ||  _  |  -__|     ||  |  |  ||   _||   _|
+ |_______||   __|_____|__|__||________||__|  |____|
+          |__| W I R E L E S S   F R E E D O M
+ -----------------------------------------------------
+注意：本套源码编译的固件后台ip：192.168.9.1
+源码和官方的版本区别：
+1.自动启动wifi
+2.SFE 
+3.最新的内核（目前为4.4.214 LTS）
+4.升级build system 加速编译速度
+5.支持node编译 默认开启FPU
+6.openssl 1.1 硬件加速
+7.更多内容可以查阅LOG
+
+
+注意：你可以自由使用本套源码编译，但源码编译二次发布请注明我的 GitHub 仓库链接。谢谢合作！
+
+本套源码内部分package来自lean并进行了一定修改 https://github.com/coolsnowwolf/lede
+
 This is the buildsystem for the LEDE Linux distribution.
 
 Please use "make menuconfig" to choose your preferred

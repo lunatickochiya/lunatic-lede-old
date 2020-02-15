@@ -1,30 +1,20 @@
-升级日志：
-2019.09.29
-1.添加eqos
-2.默认关闭samba
-3.优化配置
-4.默认关闭SFE
-2019.09.30
-1.sqm添加中文
-2.添加aria2和ariang管理端
-3.添加filebrowser（无主程序） 主程序太大了 
-4.增加了FPU模拟
-2019.10.07
-1.修复一些BUG
-2.自编译filebrowser 采用最新源码 可以在pan.52mss.cn 下载  mips对应ar71xx 也就是CSAC mipsel对应mtk机器 uclibc的是chaos calmer的ar71xx专用
-3.增加 ssr plus 支持内存运行v2ray 也可以自定义目录使用 采用kuoruan的makefile编译 只有3.4M（闪存小的机器的福音）  
-2019.10.10 final
-1.修复ssr和网易云的兼容性BUG
-2.去掉dnsfowarder
-3.汉化ssr的部分新增内容
-4.ssr支持查看网络延迟
-2019.11.02 final
-1.移除ipv6 默认开启sfe
+本套源码基于lede17.01 EOL版本制作 测试环境 ar71xx ramips
+
+
+源码更新交流学习：点击链接加入群聊 ：https://jq.qq.com/?_wv=1027&k=5QgVYsC  
+群号： 286754582 
+
+  _______                     ________        __
+ |       |.-----.-----.-----.|  |  |  |.----.|  |_
+ |   -   ||  _  |  -__|     ||  |  |  ||   _||   _|
+ |_______||   __|_____|__|__||________||__|  |____|
+          |__| W I R E L E S S   F R E E D O M
+ -----------------------------------------------------
 
 
 
 
-使用说明：
+原有使用说明：
 
 https://www.right.com.cn/forum/thread-502440-1-1.html
 
@@ -36,3 +26,5 @@ https://www.right.com.cn/forum/thread-502440-1-1.html
 关于filebrowser 挂载U盘后可以拷贝程序到U盘运行 文件名filebrowser 到挂载U盘赋予程序可执行权限 chmod +x filebrowser
 
 使用中遇到问题可以加群咨询。
+
+注意：你可以自由使用本套源码编译，但源码编译二次发布请注明我的 GitHub 仓库链接。谢谢合作！
