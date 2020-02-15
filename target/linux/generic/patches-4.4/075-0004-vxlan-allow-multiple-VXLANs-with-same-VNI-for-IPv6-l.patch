@@ -1,0 +1,168 @@
+From 7a1fa05f8d460e2a81cb724f441f7346f950680a Mon Sep 17 00:00:00 2001
+Message-Id: <7a1fa05f8d460e2a81cb724f441f7346f950680a.1498005061.git.mschiffer@universe-factory.net>
+In-Reply-To: <434a1bb54b24b538f81d7945128b7ca25976d19b.1498005061.git.mschiffer@universe-factory.net>
+References: <434a1bb54b24b538f81d7945128b7ca25976d19b.1498005061.git.mschiffer@universe-factory.net>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+Date: Mon, 19 Jun 2017 10:04:00 +0200
+Subject: [PATCH 4/4] vxlan: allow multiple VXLANs with same VNI for IPv6
+ link-local addresses
+
+As link-local addresses are only valid for a single interface, we can allow
+to use the same VNI for multiple independent VXLANs, as long as the used
+interfaces are distinct. This way, VXLANs can always be used as a drop-in
+replacement for VLANs with greater ID space.
+
+This also extends VNI lookup to respect the ifindex when link-local IPv6
+addresses are used, so using the same VNI on multiple interfaces can
+actually work.
+
+Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+[Matthias Schiffer: rebase to v4.4.y]
+---
+ drivers/net/vxlan.c | 53 +++++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 37 insertions(+), 16 deletions(-)
+
+--- a/drivers/net/vxlan.c
++++ b/drivers/net/vxlan.c
+@@ -242,22 +242,33 @@ static struct vxlan_sock *vxlan_find_soc
+ 	return NULL;
+ }
+ 
+-static struct vxlan_dev *vxlan_vs_find_vni(struct vxlan_sock *vs, u32 id)
++static struct vxlan_dev *vxlan_vs_find_vni(struct vxlan_sock *vs, int ifindex,
++					   u32 id)
+ {
+ 	struct vxlan_dev *vxlan;
+ 
+ 	hlist_for_each_entry_rcu(vxlan, vni_head(vs, id), hlist) {
+-		if (vxlan->default_dst.remote_vni == id)
+-			return vxlan;
++		if (vxlan->default_dst.remote_vni != id)
++			continue;
++
++		if (IS_ENABLED(CONFIG_IPV6)) {
++			const struct vxlan_config *cfg = &vxlan->cfg;
++
++			if ((vxlan->flags & VXLAN_F_IPV6_LINKLOCAL) &&
++			    cfg->remote_ifindex != ifindex)
++				continue;
++		}
++
++		return vxlan;
+ 	}
+ 
+ 	return NULL;
+ }
+ 
+ /* Look up VNI in a per net namespace table */
+-static struct vxlan_dev *vxlan_find_vni(struct net *net, u32 id,
+-					sa_family_t family, __be16 port,
+-					u32 flags)
++static struct vxlan_dev *vxlan_find_vni(struct net *net, int ifindex,
++				        u32 id, sa_family_t family,
++					__be16 port, u32 flags)
+ {
+ 	struct vxlan_sock *vs;
+ 
+@@ -265,7 +276,7 @@ static struct vxlan_dev *vxlan_find_vni(
+ 	if (!vs)
+ 		return NULL;
+ 
+-	return vxlan_vs_find_vni(vs, id);
++	return vxlan_vs_find_vni(vs, ifindex, id);
+ }
+ 
+ /* Fill in neighbour message in skbuff. */
+@@ -1174,7 +1185,7 @@ static void vxlan_rcv(struct vxlan_sock
+ 		vni = 0;
+ 
+ 	/* Is this VNI defined? */
+-	vxlan = vxlan_vs_find_vni(vs, vni);
++	vxlan = vxlan_vs_find_vni(vs, skb->dev->ifindex, vni);
+ 	if (!vxlan)
+ 		goto drop;
+ 
+@@ -1942,6 +1953,7 @@ static void vxlan_xmit_one(struct sk_buf
+ 	u32 vni;
+ 	__be16 df = 0;
+ 	__u8 tos, ttl;
++	int ifindex;
+ 	int err;
+ 	u32 flags = vxlan->flags;
+ 
+@@ -1950,6 +1962,7 @@ static void vxlan_xmit_one(struct sk_buf
+ 	if (rdst) {
+ 		dst_port = rdst->remote_port ? rdst->remote_port : vxlan->cfg.dst_port;
+ 		vni = rdst->remote_vni;
++		ifindex = rdst->remote_ifindex;
+ 		dst = &rdst->remote_ip;
+ 	} else {
+ 		if (!info) {
+@@ -1959,6 +1972,7 @@ static void vxlan_xmit_one(struct sk_buf
+ 		}
+ 		dst_port = info->key.tp_dst ? : vxlan->cfg.dst_port;
+ 		vni = be64_to_cpu(info->key.tun_id);
++		ifindex = 0;
+ 		remote_ip.sa.sa_family = ip_tunnel_info_af(info);
+ 		if (remote_ip.sa.sa_family == AF_INET)
+ 			remote_ip.sin.sin_addr.s_addr = info->key.u.ipv4.dst;
+@@ -2015,7 +2029,7 @@ static void vxlan_xmit_one(struct sk_buf
+ 		}
+ 
+ 		memset(&fl4, 0, sizeof(fl4));
+-		fl4.flowi4_oif = rdst ? rdst->remote_ifindex : 0;
++		fl4.flowi4_oif = ifindex;
+ 		fl4.flowi4_tos = RT_TOS(tos);
+ 		fl4.flowi4_mark = skb->mark;
+ 		fl4.flowi4_proto = IPPROTO_UDP;
+@@ -2043,7 +2057,7 @@ static void vxlan_xmit_one(struct sk_buf
+ 			struct vxlan_dev *dst_vxlan;
+ 
+ 			ip_rt_put(rt);
+-			dst_vxlan = vxlan_find_vni(vxlan->net, vni,
++			dst_vxlan = vxlan_find_vni(vxlan->net, ifindex, vni,
+ 						   dst->sa.sa_family, dst_port,
+ 						   vxlan->flags);
+ 			if (!dst_vxlan)
+@@ -2076,8 +2090,7 @@ static void vxlan_xmit_one(struct sk_buf
+ 			goto drop;
+ 		sk = vxlan->vn6_sock->sock->sk;
+ 
+-		ndst = vxlan6_get_route(vxlan, skb,
+-					rdst ? rdst->remote_ifindex : 0,
++		ndst = vxlan6_get_route(vxlan, skb, ifindex,
+ 					&dst->sin6.sin6_addr, &saddr);
+ 		if (IS_ERR(ndst)) {
+ 			netdev_dbg(dev, "no route to %pI6\n",
+@@ -2101,7 +2114,7 @@ static void vxlan_xmit_one(struct sk_buf
+ 			struct vxlan_dev *dst_vxlan;
+ 
+ 			dst_release(ndst);
+-			dst_vxlan = vxlan_find_vni(vxlan->net, vni,
++			dst_vxlan = vxlan_find_vni(vxlan->net, ifindex, vni,
+ 						   dst->sa.sa_family, dst_port,
+ 						   vxlan->flags);
+ 			if (!dst_vxlan)
+@@ -2889,10 +2902,18 @@ static int vxlan_dev_configure(struct ne
+ 		vxlan->cfg.age_interval = FDB_AGE_DEFAULT;
+ 
+ 	list_for_each_entry(tmp, &vn->vxlan_list, next) {
+-		if (tmp->cfg.vni == conf->vni &&
+-		    tmp->cfg.dst_port == vxlan->cfg.dst_port &&
+-		    (tmp->flags & (VXLAN_F_RCV_FLAGS | VXLAN_F_IPV6)) ==
++		if (tmp->cfg.vni != conf->vni)
++			continue;
++		if (tmp->cfg.dst_port != vxlan->cfg.dst_port)
++			continue;
++		if ((tmp->flags & (VXLAN_F_RCV_FLAGS | VXLAN_F_IPV6)) !=
+ 		    (vxlan->flags & (VXLAN_F_RCV_FLAGS | VXLAN_F_IPV6)))
++			continue;
++
++		if ((vxlan->flags & VXLAN_F_IPV6_LINKLOCAL) &&
++		    tmp->cfg.remote_ifindex != vxlan->cfg.remote_ifindex)
++			continue;
++
+ 		return -EEXIST;
+ 	}
+ 

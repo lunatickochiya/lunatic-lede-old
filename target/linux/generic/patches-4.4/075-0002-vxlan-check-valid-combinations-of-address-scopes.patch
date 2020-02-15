@@ -1,0 +1,84 @@
+From 8956b9db43347a51e88dddc3c08fb88ff60dea54 Mon Sep 17 00:00:00 2001
+Message-Id: <8956b9db43347a51e88dddc3c08fb88ff60dea54.1498005061.git.mschiffer@universe-factory.net>
+In-Reply-To: <434a1bb54b24b538f81d7945128b7ca25976d19b.1498005061.git.mschiffer@universe-factory.net>
+References: <434a1bb54b24b538f81d7945128b7ca25976d19b.1498005061.git.mschiffer@universe-factory.net>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+Date: Mon, 19 Jun 2017 10:03:58 +0200
+Subject: [PATCH 2/4] vxlan: check valid combinations of address scopes
+
+* Multicast addresses are never valid as local address
+* Link-local IPv6 unicast addresses may only be used as remote when the
+  local address is link-local as well
+* Don't allow link-local IPv6 local/remote addresses without interface
+
+We also store in the flags field if link-local addresses are used for the
+follow-up patches that actually make VXLAN over link-local IPv6 work.
+
+Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+[Matthias Schiffer: rebase to v4.4.y]
+---
+ drivers/net/vxlan.c | 29 +++++++++++++++++++++++++++++
+ include/net/vxlan.h |  1 +
+ 2 files changed, 30 insertions(+)
+
+--- a/drivers/net/vxlan.c
++++ b/drivers/net/vxlan.c
+@@ -2797,11 +2797,35 @@ static int vxlan_dev_configure(struct ne
+ 	if (conf->saddr.sa.sa_family != dst->remote_ip.sa.sa_family)
+ 		return -EINVAL;
+ 
++	if (vxlan_addr_multicast(&conf->saddr))
++		return -EINVAL;
++
+ 	if (conf->saddr.sa.sa_family == AF_INET6) {
+ 		if (!IS_ENABLED(CONFIG_IPV6))
+ 			return -EPFNOSUPPORT;
+ 		use_ipv6 = true;
+ 		vxlan->flags |= VXLAN_F_IPV6;
++
++		if (!(conf->flags & VXLAN_F_COLLECT_METADATA)) {
++			int local_type =
++				ipv6_addr_type(&conf->saddr.sin6.sin6_addr);
++			int remote_type =
++				ipv6_addr_type(&dst->remote_ip.sin6.sin6_addr);
++
++			if (local_type & IPV6_ADDR_LINKLOCAL) {
++				if (!(remote_type & IPV6_ADDR_LINKLOCAL) &&
++				    (remote_type != IPV6_ADDR_ANY))
++					return -EINVAL;
++
++				vxlan->flags |= VXLAN_F_IPV6_LINKLOCAL;
++			} else {
++				if (remote_type ==
++				    (IPV6_ADDR_UNICAST | IPV6_ADDR_LINKLOCAL))
++					return -EINVAL;
++
++				vxlan->flags &= ~VXLAN_F_IPV6_LINKLOCAL;
++			}
++		}
+ 	}
+ 
+ 	if (conf->remote_ifindex) {
+@@ -2827,6 +2851,11 @@ static int vxlan_dev_configure(struct ne
+ 			dev->mtu = lowerdev->mtu - (use_ipv6 ? VXLAN6_HEADROOM : VXLAN_HEADROOM);
+ 
+ 		needed_headroom = lowerdev->hard_header_len;
++	} else {
++#if IS_ENABLED(CONFIG_IPV6)
++		if (vxlan->flags & VXLAN_F_IPV6_LINKLOCAL)
++			return -EINVAL;
++#endif
+ 	}
+ 
+ 	if (conf->mtu) {
+--- a/include/net/vxlan.h
++++ b/include/net/vxlan.h
+@@ -185,6 +185,7 @@ struct vxlan_dev {
+ #define VXLAN_F_GBP			0x800
+ #define VXLAN_F_REMCSUM_NOPARTIAL	0x1000
+ #define VXLAN_F_COLLECT_METADATA	0x2000
++#define VXLAN_F_IPV6_LINKLOCAL		0x8000
+ 
+ /* Flags that are used in the receive path. These flags must match in
+  * order for a socket to be shareable
