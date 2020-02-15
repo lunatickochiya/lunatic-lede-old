@@ -18,12 +18,9 @@
 4.升级build system 加速编译速度
 5.支持node编译 默认开启FPU
 6.openssl 1.1 硬件加速
-7.更多内容可以查阅LOG
-
+7.and so on ....
 
 注意：你可以自由使用本套源码编译，但源码编译二次发布请注明我的 GitHub 仓库链接。谢谢合作！
-
-本套源码内部分package来自lean并进行了一定修改 https://github.com/coolsnowwolf/lede
 
 This is the buildsystem for the LEDE Linux distribution.
 
