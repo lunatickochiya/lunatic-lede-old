@@ -1,8 +1,8 @@
-From: Felix Fietkau <nbd@nbd.name>
+From: Felix Fietkau <nbd@openwrt.org>
 Date: Sat, 25 Apr 2015 12:41:32 +0200
 Subject: [PATCH] jffs2: add RENAME_EXCHANGE support
 
-Signed-off-by: Felix Fietkau <nbd@nbd.name>
+Signed-off-by: Felix Fietkau <nbd@openwrt.org>
 ---
 
 --- a/fs/jffs2/dir.c
