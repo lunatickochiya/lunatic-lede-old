@@ -14,6 +14,7 @@
 /feeds.conf
 /files
 /overlay
+/not-ready
 /package/feeds
 /package/openwrt-packages
 key-build*
