@@ -32,7 +32,7 @@ o.default=2
 o.rmempty = false
 
 o = s:option(Value, "v2ray_path", translate("V2ray Path"))
-o.default = "/usr/bin/v2ray"
+o.default = "/usr/bin"
 o.rmempty = true
 o.description = translate("After modifying the path, you need to download v2ray manually")
 
