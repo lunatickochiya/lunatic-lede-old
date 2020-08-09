@@ -76,6 +76,8 @@ Example user space program that communicates with fast
 classifier kernel module
 endef
 
+TARGET_CFLAGS := $(filter-out -O%,$(TARGET_CFLAGS)) -O3
+
 MAKE_OPTS:= \
 		ARCH="$(LINUX_KARCH)" \
 		CROSS_COMPILE="$(TARGET_CROSS)" \
