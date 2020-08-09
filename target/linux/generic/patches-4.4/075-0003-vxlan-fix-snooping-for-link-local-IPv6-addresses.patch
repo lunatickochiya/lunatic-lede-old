@@ -77,13 +77,12 @@ Signed-off-by: David S. Miller <davem@davemloft.net>
  		goto drop;
  
  	skb_reset_network_header(skb);
-@@ -1898,7 +1908,8 @@ static void vxlan_encap_bypass(struct sk
+@@ -1898,7 +1908,7 @@ static void vxlan_encap_bypass(struct sk
  	}
  
  	if (dst_vxlan->flags & VXLAN_F_LEARN)
--		vxlan_snoop(dev, &loopback, eth_hdr(skb)->h_source);
-+		vxlan_snoop(skb->dev, &loopback, eth_hdr(skb)->h_source, 0,
-+			    vni);
+-		vxlan_snoop(skb->dev, &loopback, eth_hdr(skb)->h_source);
++		vxlan_snoop(skb->dev, &loopback, eth_hdr(skb)->h_source, 0);
  
  	u64_stats_update_begin(&tx_stats->syncp);
  	tx_stats->tx_packets++;
